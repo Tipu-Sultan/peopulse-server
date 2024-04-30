@@ -25,7 +25,7 @@ async function addPost(req, res) {
                 const newPostData = {
                     user,
                     username,
-                    profileImage,
+                    profileImage: profileImage || null,
                     contentType,
                     content,
                     media: result.secure_url // Store the file URL from Cloudinary
@@ -40,7 +40,7 @@ async function addPost(req, res) {
             const newPostData = {
                 user,
                 username,
-                profileImage,
+                profileImage: profileImage || null,
                 contentType,
                 content
             };

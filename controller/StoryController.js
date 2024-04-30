@@ -19,7 +19,7 @@ async function storeStories(req, res) {
           content = text;
           const SaveStory = new Story({
               username,
-              profileImage,
+              profileImage: profileImage || null,
               contentType,
               content
           });
@@ -40,7 +40,7 @@ async function storeStories(req, res) {
                   }
                   const SaveStory = new Story({
                       username,
-                      profileImage,
+                      profileImage: profileImage || null,
                       contentType,
                       content: result.secure_url
                   });
