@@ -29,7 +29,9 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
+app.get('/', (req,res)=>{
+  res.send("Hello World");
+});
 // Routes
 app.use('/api/auth/', authRoutes);
 app.use('/api/post/', postsRoutes);
