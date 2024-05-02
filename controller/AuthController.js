@@ -13,7 +13,17 @@ const { isValidEmail, isValidPhoneNumber, isStrongPassword, generateVerification
 const { sendVerificationEmail } = require("../services/sendmail");
 const client = require("twilio")(ACCOUNT_SID, AUTH_TOKEN);
 const { v4: uuidv4 } = require('uuid');
+const Post = require('../models/posts');
+const Story = require('../models/story');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
+// Configure Cloudinary with your credentials
+cloudinary.config({
+  cloud_name: process.env.MY_CLOUD_NAME,
+  api_key: process.env.MY_API_KEY,
+  api_secret: process.env.MY_API_SECRET
+});
 
 async function Signup(req, res) {
   try {
@@ -294,10 +304,10 @@ async function getAllUserDetails(req, res) {
 async function getOtherDetails(req, res) {
   try {
     // Assuming authenticateToken middleware sets user ID in req.user.id
-    const {username} = req.params;
+    const { username } = req.params;
 
     // Fetch user details from the database using the user ID
-    const user = await User.findOne({username: username});
+    const user = await User.findOne({ username: username });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -335,19 +345,35 @@ async function editUserDetails(req, res) {
 
     // Update the file paths in the editedUser object
     if (avatarFile) {
-      // Delete previous avatar file if it exists
-      if (editedUser.profileImage) {
-        await fs.unlink(path.resolve(__dirname, editedUser.profileImage));
-      }
-      editedUser.profileImage = avatarFile.path;
+
+      cloudinary.uploader.upload_stream({ resource_type: "image" }, async (error, result) => {
+        if (error) {
+          console.error('Error uploading file to Cloudinary:', error);
+          return res.status(500).json({ error: 'Error uploading file to Cloudinary.' });
+        }
+        const updateprofileImageUrl = await User.findOne({email:email});
+        updateprofileImageUrl.profileImage = result.secure_url;
+        await updateprofileImageUrl.save();
+
+            // Update profile image URL in Post model
+        await Post.updateMany({ username: username }, { $set: { profileImage: result.secure_url } });
+
+        // Update profile image URL in Story model
+        await Story.updateMany({ username: username }, { $set: { profileImage: result.secure_url } });
+      }).end(avatarFile.buffer);
     }
     if (coverImageFile) {
-      // Delete previous coverImage file if it exists
-      if (editedUser.coverImage) {
-        await fs.unlink(path.resolve(__dirname, editedUser.coverImage));
-      }
-      editedUser.coverImage = coverImageFile.path;
+      cloudinary.uploader.upload_stream({ resource_type: "image" }, async (error, result) => {
+        if (error) {
+          console.error('Error uploading file to Cloudinary:', error);
+          return res.status(500).json({ error: 'Error uploading file to Cloudinary.' });
+        }
+        const updatecoverImageUrl = await User.findOne({username:username});
+        updatecoverImageUrl.coverImage = result.secure_url;
+        await updatecoverImageUrl.save();
+      }).end(coverImageFile.buffer);
     }
+
 
     // Find and update the user in MongoDB
     const updatedUser = await User.findOneAndUpdate({ email }, editedUser, { new: true });
@@ -362,8 +388,6 @@ async function editUserDetails(req, res) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
-
-
 
 
 
