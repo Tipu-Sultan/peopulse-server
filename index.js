@@ -54,7 +54,33 @@ io.on('connection', (socket) => {
 
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
+    socket.roomId = roomId;
   });
+
+
+  socket.on('callUser', (data) => {
+    const { userToCall, signalData, from } = data;
+    io.to(userToCall).emit('call-made', { signal: signalData, from });
+  });
+
+  socket.on('answerCall', (data) => {
+    const { to, signal } = data;
+    io.to(to).emit('call-answered', { signal });    
+  });
+
+  socket.on('CallToRegisterUser', (username) => {
+    socket.join(username);
+    socket.username = username;
+  });
+
+  socket.on('declineCall', ({ to }) => {
+    io.to(to).emit('callDeclined');
+  });
+
+  socket.on('call-end', ({ to }) => {
+    io.to(to).emit('call-ended');
+});
+
 
   socket.on('privateMessage', (savedMessage) => {
     io.to(savedMessage.roomId).emit('message', savedMessage);
@@ -70,7 +96,6 @@ io.on('connection', (socket) => {
   socket.on('deletedMessage', ({ roomId, msgId }) => {
     socket.to(roomId).emit('deletedMessage', msgId);
   });
-
 
 
   // Typing events
