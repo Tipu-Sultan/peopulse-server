@@ -47,7 +47,7 @@ async function storeChats(req, res) {
         const newMessage = new Chats({
             senderUsername,
             receiverUsername,
-            message,
+            message:message!==''?message:'',
             contentType,
             filepath,
             roomId,

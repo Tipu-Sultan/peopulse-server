@@ -7,7 +7,7 @@ const chatMessageSchema = new mongoose.Schema({
   receiverUsername: { type: String, required: true },
   contentType: { type: String, required: true },
   filepath: { type: String},
-  message: { type: String, required: true },
+  message: { type: String },
   isRead: { type: Boolean,default: false},
   timestamp: { type: Date, default: Date.now },
 });

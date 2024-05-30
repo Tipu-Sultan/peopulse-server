@@ -52,10 +52,10 @@ var io = require("socket.io")(server, {
 io.on('connection', (socket) => {
   console.log('User connected');
 
-  socket.on('joinRoom', (roomId) => {
+  socket.on('joinRoom', ({ sender, receiver }) => {
+    const roomId = [sender, receiver].sort().join('_');
     socket.join(roomId);
-    socket.roomId = roomId;
-  });
+});
 
 
   socket.on('callUser', (data) => {
@@ -83,18 +83,19 @@ io.on('connection', (socket) => {
 
 
   socket.on('privateMessage', (savedMessage) => {
-    io.to(savedMessage.roomId).emit('message', savedMessage);
+    const roomId = [savedMessage.senderUsername, savedMessage.receiverUsername].sort().join('_');
+    io.to(roomId).emit('message', savedMessage);
   });
 
   socket.on('privateTyping', ({ roomId, isTyping, senderUsername }) => {
-    socket.to(roomId).emit('isTyping', { isTyping, senderUsername });
+    io.to(roomId).emit('isTyping', { isTyping, senderUsername });
   });
   
 
 
 
   socket.on('deletedMessage', ({ roomId, msgId }) => {
-    socket.to(roomId).emit('deletedMessage', msgId);
+    io.to(roomId).emit('deletedMessage', msgId);
   });
 
 
