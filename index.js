@@ -54,7 +54,8 @@ io.on('connection', (socket) => {
 
   socket.on('joinRoom', ({ sender, receiver }) => {
     const roomId = [sender, receiver].sort().join('_');
-    socket.join(roomId);
+    socket.join(sender);
+    socket.username = sender;
   });
 
   socket.on('CallToRegisterUser', ({ sender, receiver }) => {
@@ -83,7 +84,7 @@ io.on('connection', (socket) => {
 
 
   socket.on('privateMessage', (savedMessage) => {
-    const roomId = [savedMessage.senderUsername, savedMessage.receiverUsername].sort().join('_');
+    const roomId = savedMessage.receiverUsername;
     io.to(roomId).emit('message', savedMessage);
   });
 
