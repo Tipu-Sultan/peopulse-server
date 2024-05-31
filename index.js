@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/', (req,res)=>{
+app.get('/', (req, res) => {
   res.send("Hello World");
 });
 // Routes
@@ -55,8 +55,13 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', ({ sender, receiver }) => {
     const roomId = [sender, receiver].sort().join('_');
     socket.join(roomId);
-});
+  });
 
+  socket.on('CallToRegisterUser', ({ sender, receiver }) => {
+    const roomId = [sender, receiver].sort().join('_');
+    socket.join(sender);
+    socket.username = sender;
+  });
 
   socket.on('callUser', (data) => {
     const { userToCall, signalData, from } = data;
@@ -65,12 +70,7 @@ io.on('connection', (socket) => {
 
   socket.on('answerCall', (data) => {
     const { to, signal } = data;
-    io.to(to).emit('call-answered', { signal });    
-  });
-
-  socket.on('CallToRegisterUser', (username) => {
-    socket.join(username);
-    socket.username = username;
+    io.to(to).emit('call-answered', { signal });
   });
 
   socket.on('declineCall', ({ to }) => {
@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
 
   socket.on('call-end', ({ to }) => {
     io.to(to).emit('call-ended');
-});
+  });
 
 
   socket.on('privateMessage', (savedMessage) => {
@@ -90,7 +90,7 @@ io.on('connection', (socket) => {
   socket.on('privateTyping', ({ roomId, isTyping, senderUsername }) => {
     io.to(roomId).emit('isTyping', { isTyping, senderUsername });
   });
-  
+
 
 
 
@@ -121,7 +121,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('addStory', (newStoryData) => {
-    io.emit('addStory', newStoryData);
+    io.emit('storyAdded', newStoryData);
+  });
+
+  socket.on('deleteStory', (newStoryData) => {
+    io.emit('storyDeleted', newStoryData);
   });
 
   socket.on('follow-request', (followingbyreceiver, followedbySender, username, logginUser) => {
