@@ -1,6 +1,9 @@
 
 const express = require('express');
-const http = require('http');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const cors = require('cors');
+const path = require("path");
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./db/conn');
@@ -12,9 +15,12 @@ const storyRoutes = require('./routes/storyRoutes');
 
 
 const app = express();
-
-const cors = require('cors');
-const path = require("path");
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 
 dotenv.config();
@@ -32,6 +38,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/', (req, res) => {
   res.send("Hello World");
 });
+
 // Routes
 app.use('/api/auth/', authRoutes);
 app.use('/api/post/', postsRoutes);
@@ -40,22 +47,15 @@ app.use('/api/chats/', chatsRoutes);
 app.use('/api/story/', storyRoutes);
 
 // Start the server
-var server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-var io = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-  },
-});
 
 io.on('connection', (socket) => {
-  console.log('User connected');
+  console.log('User connected', socket.id);
 
-  socket.on('joinRoom', ({ sender, receiver }) => {
-    const roomId = [sender, receiver].sort().join('_');
-    socket.join(roomId);
-  });
+  // socket.on('joinRoom', ({ sender, receiver }) => {
+  //   const roomId = [sender, receiver].sort().join('_');
+  //   socket.join(sender);
+  //   socket.username = sender;
+  // });
 
   socket.on('CallToRegisterUser', ({ sender, receiver }) => {
     const roomId = [sender, receiver].sort().join('_');
@@ -83,15 +83,13 @@ io.on('connection', (socket) => {
 
 
   socket.on('privateMessage', (savedMessage) => {
-    const roomId = [savedMessage.senderUsername, savedMessage.receiverUsername].sort().join('_');
-    io.to(roomId).emit('message', savedMessage);
+    const socketId = savedMessage.receiverUsername;
+    io.to(socketId).emit('message', savedMessage);
   });
 
-  socket.on('privateTyping', ({ roomId, isTyping, senderUsername }) => {
-    io.to(roomId).emit('isTyping', { isTyping, senderUsername });
+  socket.on('privateTyping', ({isTyping, reciverUsername }) => {
+    io.to(reciverUsername).emit('isTyping', { isTyping, reciverUsername });
   });
-
-
 
 
   socket.on('deletedMessage', ({ roomId, msgId }) => {
@@ -135,5 +133,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
+
+});
+
+// Start the server
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
