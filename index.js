@@ -48,52 +48,51 @@ app.use('/api/story/', storyRoutes);
 
 // Start the server
 
+
+const userSocketMap = {};
+
 io.on('connection', (socket) => {
   console.log('User connected', socket.id);
 
-  // socket.on('joinRoom', ({ sender, receiver }) => {
-  //   const roomId = [sender, receiver].sort().join('_');
-  //   socket.join(sender);
-  //   socket.username = sender;
-  // });
+  const userId = socket.handshake.query.userId;
 
-  socket.on('CallToRegisterUser', ({ sender, receiver }) => {
-    const roomId = [sender, receiver].sort().join('_');
-    socket.join(sender);
-    socket.username = sender;
-  });
+  if(userId!==undefined) {
+    userSocketMap[userId] = socket.id;
+  }
+
+  io.emit('getOnlineUsers',Object.keys(userSocketMap));
 
   socket.on('callUser', (data) => {
     const { userToCall, signalData, from } = data;
-    io.to(userToCall).emit('call-made', { signal: signalData, from });
+    io.to(userSocketMap[userToCall]).emit('call-made', { signal: signalData, from });
   });
 
   socket.on('answerCall', (data) => {
     const { to, signal } = data;
-    io.to(to).emit('call-answered', { signal });
+    io.to(userSocketMap[to]).emit('call-answered', { signal });
   });
 
   socket.on('declineCall', ({ to }) => {
-    io.to(to).emit('callDeclined');
+    io.to(userSocketMap[to]).emit('callDeclined');
   });
 
   socket.on('call-end', ({ to }) => {
-    io.to(to).emit('call-ended');
+    io.to(userSocketMap[to]).emit('call-ended');
   });
 
 
   socket.on('privateMessage', (savedMessage) => {
     const socketId = savedMessage.receiverUsername;
-    io.to(socketId).emit('message', savedMessage);
+    io.to(userSocketMap[socketId]).emit('message', savedMessage);
   });
 
-  socket.on('privateTyping', ({isTyping, reciverUsername }) => {
-    io.to(reciverUsername).emit('isTyping', { isTyping, reciverUsername });
+  socket.on('privateTyping', ({isTyping, reciverUsername,senderUsername }) => {
+    io.to(userSocketMap[reciverUsername]).emit('isTyping', { isTyping, reciverUsername,senderUsername });
   });
 
 
   socket.on('deletedMessage', ({ roomId, msgId }) => {
-    io.to(roomId).emit('deletedMessage', msgId);
+    io.to(userSocketMap[roomId]).emit('deletedMessage', msgId);
   });
 
 
@@ -131,7 +130,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected',userSocketMap[userId]);
+    delete userSocketMap[userId];
+    io.emit('getOnlineUsers',Object.keys(userSocketMap));
+
   });
 
 });
