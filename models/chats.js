@@ -9,6 +9,7 @@ const chatMessageSchema = new mongoose.Schema({
   filepath: { type: String},
   message: { type: String },
   isRead: { type: Boolean,default: false},
+  isMsgDelete: { type: Boolean,default: false},
   timestamp: { type: Date, default: Date.now },
 });
 

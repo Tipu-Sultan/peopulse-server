@@ -94,6 +94,10 @@ io.on('connection', (socket) => {
     io.to(userSocketMap[roomId]).emit('deletedMessage', msgId);
   });
 
+  socket.on('deletedMultiMessage', ({ roomId, updatedMessages }) => {
+    io.to(userSocketMap[roomId]).emit('deletedMultiMessage', updatedMessages);
+  });
+
   socket.on('unreadMessages', ({ roomId, MsgsCount}) => {
     io.to(userSocketMap[roomId]).emit('unreadMessages', MsgsCount);
   });

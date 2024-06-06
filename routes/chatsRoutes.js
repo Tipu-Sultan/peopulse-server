@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { storeChats, getFollowedUsers, getSenderRecievrMsg, deleteMsgById, getAllMessags } = require("../controller/ChatsController");
+const { storeChats, getFollowedUsers, getSenderRecievrMsg, deleteMsgById, getAllMessags,deleteMultiMsgById } = require("../controller/ChatsController");
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 const path = require('path');
@@ -24,5 +24,7 @@ router.get('/followed-user-details/:username',authMiddleware,getFollowedUsers);
 router.post('/get-messages',authMiddleware,getSenderRecievrMsg);
 router.get('/get-allmessages',authMiddleware,getAllMessags);
 router.delete('/delete-message/:msgId',authMiddleware,deleteMsgById);
+router.delete('/delete-multi-messages',authMiddleware,deleteMultiMsgById);
+
 
 module.exports = router;

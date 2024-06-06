@@ -50,8 +50,8 @@ const userSchema = new mongoose.Schema({
     default: '',
   },
   lastSeen:{
-    type: String,
-    default: '',
+    type: Number,
+    default: Date.now,
   },
   followers: [
     {

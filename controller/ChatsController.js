@@ -47,7 +47,7 @@ async function storeChats(req, res) {
         const newMessage = new Chats({
             senderUsername,
             receiverUsername,
-            message:message!==''?message:'',
+            message: message !== '' ? message : '',
             contentType,
             filepath,
             roomId,
@@ -101,7 +101,7 @@ const getSenderRecievrMsg = async (req, res) => {
         });
 
         await Chats.updateMany(
-            { senderUsername: receiverUsername, receiverUsername:senderUsername, isRead: false }, 
+            { senderUsername: receiverUsername, receiverUsername: senderUsername, isRead: false },
             { $set: { isRead: true } }
         );
 
@@ -118,10 +118,10 @@ const getAllMessags = async (req, res) => {
         // Fetch all messages from the database
         const messages = await Chats.find();
         res.json(messages);
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching messages:', error);
         res.status(500).json({ message: 'Internal server error' });
-      }
+    }
 }
 
 const deleteMsgById = async (req, res) => {
@@ -140,10 +140,35 @@ const deleteMsgById = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+const deleteMultiMsgById = async (req, res) => {
+    try {
+        const { selectedMessages, username } = req.body;
+        const messageIds = selectedMessages.map(msg => msg.messageId);
+
+        // Update the messages where senderUsername matches and set isMsgDelete to true
+        await Chats.updateMany(
+            { _id: { $in: messageIds }, receiverUsername: username },
+            { $set: { isMsgDelete: true } }
+        );
+
+        // Delete the messages where receiverUsername matches
+        await Chats.deleteMany(
+            { _id: { $in: messageIds }, senderUsername: username }
+        );
+
+        res.status(200).json({ message: 'Messages updated/deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting messages:', error);
+        res.status(500).json({ error: 'Failed to delete messages. Please try again.' });
+    }
+};
+
 module.exports = {
     storeChats,
     getFollowedUsers,
     getSenderRecievrMsg,
     deleteMsgById,
     getAllMessags,
+    deleteMultiMsgById
 }
