@@ -121,20 +121,12 @@ async function Login(req, res) {
 const Logout = async (req, res) => {
   try {
     const userId = req.user.id;
-
-    // Get the current date and time
-    const now = new Date();
-
-    // Format the date and time to 12-hour format with AM/PM
-    const formattedTime = now.toLocaleString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
-      hour12: true
-    });
+    
+    // Get the current timestamp
+    const currLastSeen = Date.now();
 
     // Update the user's document with the new lastSeen time
-    await User.findByIdAndUpdate(userId, { isLogged: false, lastSeen: formattedTime });
+    await User.findByIdAndUpdate(userId, { isLogged: false, lastSeen: currLastSeen });
 
     res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
@@ -142,6 +134,7 @@ const Logout = async (req, res) => {
     res.status(500).json({ error: 'Failed to logout. Please try again.' });
   }
 };
+
 
 
 

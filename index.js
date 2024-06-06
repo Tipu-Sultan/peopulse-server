@@ -86,13 +86,16 @@ io.on('connection', (socket) => {
     io.to(userSocketMap[socketId]).emit('message', savedMessage);
   });
 
-  socket.on('privateTyping', ({isTyping, reciverUsername,senderUsername }) => {
-    io.to(userSocketMap[reciverUsername]).emit('isTyping', { isTyping, reciverUsername,senderUsername });
+  socket.on('privateTyping', ({isTyping,TypingMsg, reciverUsername,senderUsername }) => {
+    io.to(userSocketMap[reciverUsername]).emit('isTyping', {isTyping,TypingMsg, reciverUsername,senderUsername });
   });
-
 
   socket.on('deletedMessage', ({ roomId, msgId }) => {
     io.to(userSocketMap[roomId]).emit('deletedMessage', msgId);
+  });
+
+  socket.on('unreadMessages', ({ roomId, MsgsCount}) => {
+    io.to(userSocketMap[roomId]).emit('unreadMessages', MsgsCount);
   });
 
 
