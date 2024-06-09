@@ -28,6 +28,7 @@ router.put('/saveprofile',authMiddleware,upload.fields([{ name: 'avatar', maxCou
 router.post("/signup",Signup);
 
 router.post('/login',Login);
+
 router.post('/logout',authMiddleware,Logout);
 
 router.post('/forgot-password',ForgotPassword);

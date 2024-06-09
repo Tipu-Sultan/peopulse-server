@@ -50,7 +50,7 @@ async function makeFollowRequest(req, res) {
         (follower) =>
           !(follower.followersUsername === sender.username && follower.logginUsername === receiver.username)
       );
-      
+
       // Delete from sender's & receiver  array
       receiver.following = sender.following.filter(
         (follow) =>
@@ -111,14 +111,14 @@ async function makeFollowRequest(req, res) {
       }
 
       // Update the status and action in sender's following array
-      const senderFollowing = receiver.following.find((follow) =>follow.followingUsername === sender.username);
+      const senderFollowing = receiver.following.find((follow) => follow.followingUsername === sender.username);
       if (senderFollowing) {
         senderFollowing.status = 'confirmed';
         senderFollowing.action = action;
       }
 
       // Update the status and action in receiver's followers array
-      const receiverFollower = sender.followers.find((follow) =>follow.followersUsername === receiver.username);
+      const receiverFollower = sender.followers.find((follow) => follow.followersUsername === receiver.username);
       if (receiverFollower) {
         receiverFollower.status = 'confirmed';
         receiverFollower.action = action;
@@ -134,7 +134,33 @@ async function makeFollowRequest(req, res) {
   }
 }
 
+async function updateBlockUnblock(req, res) {
+  try {
+    const { To, blockStatus } = req.body;
+
+    // Construct the query to find the user by username
+    const query = { username: To };
+
+    // Update the blockStatus field
+    const updateResult = await User.findOneAndUpdate(
+      query,
+      { blockStatus: blockStatus },
+      { new: true }
+    );
+
+    if (updateResult) {
+      res.status(200).json({ message: 'Block status updated successfully', data: updateResult });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error updating block status:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 
 module.exports = {
   makeFollowRequest,
+  updateBlockUnblock
 };

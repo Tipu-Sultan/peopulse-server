@@ -45,14 +45,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-  lastMessage:{
+  lastMessage: {
     type: String,
     default: '',
   },
-  lastSeen:{
+  lastSeen: {
     type: Number,
     default: Date.now,
   },
+  blockStatus: {
+    type: String,
+    default: '',
+},
   followers: [
     {
       followersUsername: {
@@ -74,7 +78,6 @@ const userSchema = new mongoose.Schema({
         required: true,
       },
     }
-
   ],
   following: [
     {
@@ -122,6 +125,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  groups: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+    }
+  ],
 });
 
 const User = mongoose.model('User', userSchema);

@@ -10,6 +10,7 @@ const chatMessageSchema = new mongoose.Schema({
   message: { type: String },
   isRead: { type: Boolean,default: false},
   isMsgDelete: { type: Boolean,default: false},
+  blockStatus: { type: String,default: ''},
   timestamp: { type: Date, default: Date.now },
 });
 

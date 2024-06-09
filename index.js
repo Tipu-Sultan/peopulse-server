@@ -12,6 +12,8 @@ const authRoutes = require('./routes/authRoutes');
 const followRoutes = require('./routes/followRoutes');
 const chatsRoutes = require('./routes/chatsRoutes');
 const storyRoutes = require('./routes/storyRoutes');
+const groupChatsRoutes = require('./routes/chatGroupRoutes');
+
 
 
 const app = express();
@@ -44,6 +46,7 @@ app.use('/api/auth/', authRoutes);
 app.use('/api/post/', postsRoutes);
 app.use('/api/follow/', followRoutes);
 app.use('/api/chats/', chatsRoutes);
+app.use('/api/auth/group-chat/', groupChatsRoutes);
 app.use('/api/story/', storyRoutes);
 
 // Start the server

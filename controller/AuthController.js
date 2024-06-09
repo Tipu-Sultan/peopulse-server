@@ -335,7 +335,7 @@ async function getOtherDetails(req, res) {
 async function editUserDetails(req, res) {
   try {
     // Retrieve user data from the request body
-    const { username, firstname, lastname, email, bio } = req.body;
+    const {loggedUsername, username, firstname, lastname, email, bio } = req.body;
 
     // Handle file uploads (avatar and coverImage)
     const avatarFile = req.files && req.files['avatar'] ? req.files['avatar'][0] : null;
@@ -363,10 +363,10 @@ async function editUserDetails(req, res) {
         await updateprofileImageUrl.save();
 
             // Update profile image URL in Post model
-        await Post.updateMany({ username: username }, { $set: { profileImage: result.secure_url } });
+        await Post.updateMany({ username: loggedUsername }, { $set: { profileImage: result.secure_url,username:username } });
 
         // Update profile image URL in Story model
-        await Story.updateMany({ username: username }, { $set: { profileImage: result.secure_url } });
+        await Story.updateMany({ username: loggedUsername }, { $set: { profileImage: result.secure_url,username:username } });
       }).end(avatarFile.buffer);
     }
     if (coverImageFile) {
@@ -375,7 +375,7 @@ async function editUserDetails(req, res) {
           console.error('Error uploading file to Cloudinary:', error);
           return res.status(500).json({ error: 'Error uploading file to Cloudinary.' });
         }
-        const updatecoverImageUrl = await User.findOne({username:username});
+        const updatecoverImageUrl = await User.findOne({email:email});
         updatecoverImageUrl.coverImage = result.secure_url;
         await updatecoverImageUrl.save();
       }).end(coverImageFile.buffer);
