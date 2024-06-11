@@ -80,7 +80,14 @@ const deleteStory = async (req, res) => {
 
 async function getAllStories(req, res) {
   try {
-    // Retrieve all stories from the database
+    // Calculate the date 24 hours ago from now
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // Delete stories older than 24 hours
+    const deleteResult = await Story.deleteMany({ createdAt: { $lt: twentyFourHoursAgo } });
+    console.log(`Deleted ${deleteResult.deletedCount} stories older than 24 hours`);
+
+    // Retrieve all remaining stories from the database
     const stories = await Story.find();
     res.json(stories); // Send the stories as a response
   } catch (error) {
