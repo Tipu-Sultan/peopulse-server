@@ -27,7 +27,7 @@ async function makeFollowRequest(req, res) {
       );
 
     } else if (action === 'Delete') {
-
+      // Delete the friendship record from the Friends collection
       await Friends.findOneAndDelete({
         $or: [
           {
@@ -41,28 +41,31 @@ async function makeFollowRequest(req, res) {
         ]
       });
 
+      // Update sender's following list
       sender.following = sender.following.filter(
         (follow) =>
           !(follow.followingUsername === receiver.username && follow.logginUsername === sender.username)
       );
 
+      // Update receiver's followers list
       receiver.followers = receiver.followers.filter(
         (follower) =>
           !(follower.followersUsername === sender.username && follower.logginUsername === receiver.username)
       );
 
-      // Delete from sender's & receiver  array
-      receiver.following = sender.following.filter(
+      // Update receiver's following list
+      receiver.following = receiver.following.filter(
         (follow) =>
-          !(follow.followingUsername === receiver.username && follow.logginUsername === sender.username)
+          !(follow.followingUsername === sender.username && follow.logginUsername === receiver.username)
       );
 
-      sender.followers = receiver.followers.filter(
+      // Update sender's followers list
+      sender.followers = sender.followers.filter(
         (follower) =>
-          !(follower.followersUsername === sender.username && follower.logginUsername === receiver.username)
+          !(follower.followersUsername === receiver.username && follower.logginUsername === sender.username)
       );
-
     }
+
     else if (action === 'Requested') {
 
       // Find the existing relationship in Friends collection
